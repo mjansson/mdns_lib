@@ -1,0 +1,3 @@
+
+HASH_MDNS                              mdns
+HASH_DNSDS                             dns-ds
