@@ -1,18 +1,19 @@
 /* main.c  -  mDNS library  -  Public Domain  -  2013 Mattias Jansson / Rampant Pixels
- * 
- * This library provides a cross-platform mDNS and DNS-DS library in C based
- * on our foundation and network libraries.
- * 
+ *
+ * This library provides a cross-platform mDNS and DNS-SD library in C based
+ * on our foundation and network libraries. The implementation is based on RFC 6762
+ * and RFC 6763.
+ *
  * The latest source code maintained by Rampant Pixels is always available at
- * 
+ *
  * https://github.com/rampantpixels/mdns_lib
- * 
+ *
  * The foundation and network library source code maintained by Rampant Pixels
  * is always available at
- * 
+ *
  * https://github.com/rampantpixels/foundation_lib
  * https://github.com/rampantpixels/network_lib
- * 
+ *
  * This library is put in the public domain; you can redistribute it and/or modify it without any restrictions.
  *
  */
@@ -49,7 +50,7 @@ bool parse_string( void* rawdata, size_t size, size_t* buffer_offset, char* name
 		{
 			if( size < offset + len + 1 )
 				goto FAIL;
-	
+
 			memcpy( name + namelen, buffer + offset + 1, len );
 			namelen += len;
 			offset += len + 1;
@@ -70,7 +71,8 @@ FAIL:
 
 application_t test_dnsds_application( void )
 {
-	application_t app = {0};
+	application_t app;
+	memset( &app, 0, sizeof( app ) );
 	app.name = "DNS-DS tests";
 	app.short_name = "test_dnsds";
 	app.config_dir = "test_dnsds";
@@ -97,7 +99,7 @@ void test_dnsds_shutdown( void )
 }
 
 
-static const uint8_t spotify_dns_query[] = {
+static const uint8_t services_query[] = {
   // transaction id
   0x00, 0x00,
   // flags
@@ -110,18 +112,20 @@ static const uint8_t spotify_dns_query[] = {
   0x00, 0x00,
   // additional RRs
   0x00, 0x00,
-  // \x10_spotify-connect.
-  0x10, 0x5f, 0x73, 0x70, 0x6f, 0x74, 0x69, 0x66, 0x79, 0x2d, 0x63, 0x6f, 0x6e, 0x6e, 0x65, 0x63, 0x74,
+  // \x11_services._dns-sd.
+  0x11, '_', 's', 'e', 'r', 'v', 'i', 'c', 'e', 's', '.', '_', 'd', 'n', 's', '-', 's', 'd',
   // \x04_tcp.
-  0x04, 0x5f, 0x74, 0x63, 0x70,
-  // \x05local
-  0x05, 0x6c, 0x6f, 0x63, 0x61, 0x6c, 0x00,
+  0x04, '_', 'u', 'd', 'p',
+  // \x05local.
+  0x05, 'l', 'o', 'c', 'a', 'l',
+  // string terminator
+  0x00,
   // PTR (domain name pointer)
   0x00, 0x0c,
   // QU and class IN
   0x80, 0x01
 };
-static const int spotify_dns_query_len = sizeof(spotify_dns_query);
+static const int services_query_len = sizeof(services_query);
 
 enum DNSSrvTypes {
 	MDNS_RECORDTYPE_IGNORE,
@@ -250,10 +254,11 @@ DECLARE_TEST( dnsds, discover )
 	network_address_t* mdns_multicast_addr;
 	network_address_t** localhost_addrs;
 	network_address_t* localhost_addr;
+	network_address_t* any_addr;
 	object_t sock_mdns;
 	network_datagram_t discover_datagram;
 
-	log_set_suppress( HASH_NETWORK, ERRORLEVEL_NONE );
+	log_set_suppress( HASH_NETWORK, ERRORLEVEL_DEBUG );
 	log_info( HASH_TEST, "Setup socket" );
 
 	localhost_addrs = network_address_local();
@@ -262,7 +267,7 @@ DECLARE_TEST( dnsds, discover )
 #else
 	localhost_addr = localhost_addrs[4];
 #endif
-	{ 
+	{
 		char* to_addr = network_address_to_string( localhost_addr, true );
 		log_infof( HASH_TEST, "Listening to %s", to_addr );
 		string_deallocate( to_addr );
@@ -271,19 +276,21 @@ DECLARE_TEST( dnsds, discover )
 	mdns_multicast_addrs = network_address_resolve( "224.0.0.251" );
 	mdns_multicast_addr = mdns_multicast_addrs[0];
 
+	any_addr = localhost_addr;//network_address_ipv4_any();
+	network_address_ip_set_port( any_addr, 53530 );
 
 	sock_mdns = udp_socket_create();
 	EXPECT_NE( sock_mdns, 0 );
 
 	socket_set_reuse_address( sock_mdns, true );
 	socket_set_reuse_port( sock_mdns, true );
-	EXPECT_TRUE( socket_bind( sock_mdns, localhost_addr ) );
-	EXPECT_TRUE( socket_set_multicast_group( sock_mdns, mdns_multicast_addr ) );
+	EXPECT_TRUE( socket_bind( sock_mdns, any_addr ) );
+	EXPECT_TRUE( socket_set_multicast_group( sock_mdns, mdns_multicast_addr, true ) );
 
 	network_address_ip_set_port( mdns_multicast_addr, 5353 );
 
-	discover_datagram.data = (void*)spotify_dns_query;
-	discover_datagram.size = spotify_dns_query_len;
+	discover_datagram.data = (void*)services_query;
+	discover_datagram.size = services_query_len;
 	{
 		char* to_addr = network_address_to_string( mdns_multicast_addr, true );
 		log_infof( HASH_TEST, "Sending query to %s", to_addr );
@@ -294,9 +301,11 @@ DECLARE_TEST( dnsds, discover )
 
 	while( true )
 	{
+		const network_address_t* source;
+
 		thread_sleep( 1000 );
-		
-		network_datagram_t datagram = udp_socket_recvfrom( sock_mdns, 0 );
+
+		network_datagram_t datagram = udp_socket_recvfrom( sock_mdns, &source );
 		log_infof( HASH_TEST, "Read bytes: %lld", datagram.size );
 
 		if( datagram.size > 0 )
@@ -391,7 +400,7 @@ DECLARE_TEST( dnsds, discover )
 				if( type == MDNS_RECORDTYPE_SRV )
 				{
 					unsigned char* recorddata = data;
-					
+
 					// Read the port number and the discovery name
 					// SRV record format (http://www.ietf.org/rfc/rfc2782.txt):
 					// 2 bytes network-order unsigned priority
@@ -457,7 +466,7 @@ DECLARE_TEST( dnsds, discover )
 	network_address_array_deallocate( localhost_addrs );
 
 	socket_destroy( sock_mdns );
-	
+
 	return 0;
 }
 

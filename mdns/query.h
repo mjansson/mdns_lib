@@ -1,4 +1,4 @@
-/* build.h  -  mDNS library  -  Public Domain  -  2014 Mattias Jansson / Rampant Pixels
+/* query.h  -  mDNS library  -  Public Domain  -  2015 Mattias Jansson / Rampant Pixels
  *
  * This library provides a cross-platform mDNS and DNS-SD library in C based
  * on our foundation and network libraries. The implementation is based on RFC 6762
@@ -22,24 +22,13 @@
 
 #include <foundation/platform.h>
 
-
-#if defined( MDNS_COMPILE ) && MDNS_COMPILE
-#  ifdef __cplusplus
-#  define MDNS_EXTERN extern "C"
-#  define MDNS_API extern "C"
-#  else
-#  define MDNS_EXTERN extern
-#  define MDNS_API extern
-#  endif
-#else
-#  ifdef __cplusplus
-#  define MDNS_EXTERN extern "C"
-#  define MDNS_API extern "C"
-#  else
-#  define MDNS_EXTERN extern
-#  define MDNS_API extern
-#  endif
-#endif
+#include <mdns/types.h>
+#include <mdns/hashstrings.h>
 
 
-#define MDNS_QUERY_SIZE_DEFAULT             512
+MDNS_API mdns_query_t*      mdns_query_allocate( uint16_t capacity, const char* name );
+MDNS_API void               mdns_query_initialize( mdns_query_t* query, uint16_t capacity, const char* name );
+MDNS_API void               mdns_query_finalize( mdns_query_t* query );
+MDNS_API void               mdns_query_deallocate( mdns_query_t* query );
+
+MDNS_API void               mdns_query_append( mdns_query_t* query, const char* name );

@@ -1,4 +1,4 @@
-/* build.h  -  mDNS library  -  Public Domain  -  2014 Mattias Jansson / Rampant Pixels
+/* response.c  -  mDNS library  -  Public Domain  -  2015 Mattias Jansson / Rampant Pixels
  *
  * This library provides a cross-platform mDNS and DNS-SD library in C based
  * on our foundation and network libraries. The implementation is based on RFC 6762
@@ -18,28 +18,3 @@
  *
  */
 
-#pragma once
-
-#include <foundation/platform.h>
-
-
-#if defined( MDNS_COMPILE ) && MDNS_COMPILE
-#  ifdef __cplusplus
-#  define MDNS_EXTERN extern "C"
-#  define MDNS_API extern "C"
-#  else
-#  define MDNS_EXTERN extern
-#  define MDNS_API extern
-#  endif
-#else
-#  ifdef __cplusplus
-#  define MDNS_EXTERN extern "C"
-#  define MDNS_API extern "C"
-#  else
-#  define MDNS_EXTERN extern
-#  define MDNS_API extern
-#  endif
-#endif
-
-
-#define MDNS_QUERY_SIZE_DEFAULT             512
