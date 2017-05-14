@@ -26,4 +26,5 @@
 
 # Ignore build scripts in language stats
 build/* linguist-vendored
+test/* linguist-vendored
 configure.py linguist-vendored=true
