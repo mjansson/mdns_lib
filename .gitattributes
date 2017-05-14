@@ -27,4 +27,5 @@
 # Ignore build scripts in language stats
 build/* linguist-vendored
 test/* linguist-vendored
+*.h linguist-language=C
 configure.py linguist-vendored=true
