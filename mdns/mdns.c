@@ -12,6 +12,7 @@
  * is always available at
  *
  * https://github.com/rampantpixels/foundation_lib
+ *
  * https://github.com/rampantpixels/network_lib
  *
  * This library is put in the public domain; you can redistribute it and/or modify it without any restrictions.
@@ -22,13 +23,13 @@
 
 #include <foundation/foundation.h>
 
-
 static bool _mdns_initialized = false;
 
+int
+mdns_module_initialize(const mdns_config_t config) {
+	FOUNDATION_UNUSED(config);
 
-int mdns_initialize( void )
-{
-	if( _mdns_initialized )
+	if (_mdns_initialized)
 		return 0;
 
 	_mdns_initialized = true;
@@ -36,18 +37,16 @@ int mdns_initialize( void )
 	return 0;
 }
 
-
-void mdns_shutdown( void )
-{
-	if( !_mdns_initialized )
+void
+mdns_module_shutdown(void) {
+	if (!_mdns_initialized)
 		return;
 
 	_mdns_initialized = false;
 }
 
-
-bool mdns_is_initialized( void )
-{
+bool
+mdns_module_is_initialized(void) {
 	return _mdns_initialized;
 }
 

@@ -12,6 +12,7 @@
  * is always available at
  *
  * https://github.com/rampantpixels/foundation_lib
+ *
  * https://github.com/rampantpixels/network_lib
  *
  * This library is put in the public domain; you can redistribute it and/or modify it without any restrictions.
@@ -31,6 +32,14 @@
 #include <mdns/service.h>
 
 
-MDNS_API int     mdns_initialize( void );
-MDNS_API void    mdns_shutdown( void );
-MDNS_API bool    mdns_is_initialized( void );
+MDNS_API int
+mdns_module_initialize(const mdns_config_t config);
+
+MDNS_API void
+mdns_module_shutdown(void);
+
+MDNS_API bool
+mdns_module_is_initialized(void);
+
+MDNS_API version_t
+mdns_module_version(void);

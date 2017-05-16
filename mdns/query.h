@@ -12,6 +12,7 @@
  * is always available at
  *
  * https://github.com/rampantpixels/foundation_lib
+ *
  * https://github.com/rampantpixels/network_lib
  *
  * This library is put in the public domain; you can redistribute it and/or modify it without any restrictions.
@@ -25,10 +26,17 @@
 #include <mdns/types.h>
 #include <mdns/hashstrings.h>
 
+MDNS_API mdns_query_t*
+mdns_query_allocate(uint16_t capacity, const char* name);
 
-MDNS_API mdns_query_t*      mdns_query_allocate( uint16_t capacity, const char* name );
-MDNS_API void               mdns_query_initialize( mdns_query_t* query, uint16_t capacity, const char* name );
-MDNS_API void               mdns_query_finalize( mdns_query_t* query );
-MDNS_API void               mdns_query_deallocate( mdns_query_t* query );
+MDNS_API void
+mdns_query_initialize(mdns_query_t* query, uint16_t capacity, const char* name);
 
-MDNS_API void               mdns_query_append( mdns_query_t* query, const char* name );
+MDNS_API void
+mdns_query_finalize(mdns_query_t* query);
+
+MDNS_API void
+mdns_query_deallocate(mdns_query_t* query);
+
+MDNS_API void
+mdns_query_append(mdns_query_t* query, const char* name);

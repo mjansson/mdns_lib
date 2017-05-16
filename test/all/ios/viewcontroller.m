@@ -1,47 +1,43 @@
 /* viewcontroller.m  -  Foundation test launcher  -  Public Domain  -  2013 Mattias Jansson / Rampant Pixels
  *
- * This library provides a cross-platform foundation library in C11 providing basic support data types and
- * functions to write applications and games in a platform-independent fashion. The latest source code is
- * always available at
+ * This library provides a cross-platform foundation library in C11 providing basic support
+ * data types and functions to write applications and games in a platform-independent fashion.
+ * The latest source code is always available at
  *
  * https://github.com/rampantpixels/foundation_lib
  *
- * This library is put in the public domain; you can redistribute it and/or modify it without any restrictions.
- *
+ * This library is put in the public domain; you can redistribute it and/or modify it without
+ * any restrictions.
  */
 
 #include "viewcontroller.h"
 
+#if FOUNDATION_COMPILER_CLANG
+#  if __has_warning("-Wpartial-availability")
+#    pragma clang diagnostic ignored "-Wpartial-availability"
+#  endif
+#endif
 
-@interface ViewController ()
-
+@interface ViewController()
 @end
-
 
 @implementation ViewController
 
-
-- (void)viewDidLoad
-{
+- (void)viewDidLoad {
 	[super viewDidLoad];
 
-	if( [self respondsToSelector:@selector(setNeedsStatusBarAppearanceUpdate)] )
+	if ([self respondsToSelector:@selector(setNeedsStatusBarAppearanceUpdate)])
 		[self setNeedsStatusBarAppearanceUpdate];
-	else
-		[[UIApplication sharedApplication] setStatusBarHidden:YES withAnimation:UIStatusBarAnimationNone];
+	//iOS pre-9.0 - else
+	//  [[UIApplication sharedApplication] setStatusBarHidden:YES withAnimation:UIStatusBarAnimationNone];
 }
 
-
-- (void)didReceiveMemoryWarning
-{
+- (void)didReceiveMemoryWarning {
 	[super didReceiveMemoryWarning];
 }
 
-
-- (BOOL)prefersStatusBarHidden
-{
+- (BOOL)prefersStatusBarHidden {
 	return TRUE;
 }
-
 
 @end

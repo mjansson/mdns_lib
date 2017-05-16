@@ -26,7 +26,7 @@
 
 #include <mdns/build.h>
 
-
+typedef struct mdns_config_t         mdns_config_t;
 typedef struct mdns_query_t          mdns_query_t;
 typedef struct mdns_query_fixed_t    mdns_query_fixed_t;
 typedef struct mdns_record_t         mdns_record_t;
@@ -34,17 +34,18 @@ typedef struct mdns_response_t       mdns_response_t;
 typedef struct mdns_service_t        mdns_service_t;
 typedef struct mdns_txt_t            mdns_txt_t;
 
-
-struct mdns_query_t
-{
-	uint16_t                   size;
-	uint16_t                   capacity;
-	char                       buffer[];
+struct mdns_config_t {
+	int       unused;
 };
 
-struct mdns_query_fixed_t
-{
-	uint16_t                   size;
-	uint16_t                   capacity;
-	char                       buffer[MDNS_QUERY_SIZE_DEFAULT];
+struct mdns_query_t {
+	uint16_t  size;
+	uint16_t  capacity;
+	char      buffer[];
+};
+
+struct mdns_query_fixed_t {
+	uint16_t  size;
+	uint16_t  capacity;
+	char      buffer[MDNS_QUERY_SIZE_DEFAULT];
 };

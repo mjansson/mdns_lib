@@ -12,6 +12,7 @@
  * is always available at
  *
  * https://github.com/rampantpixels/foundation_lib
+ *
  * https://github.com/rampantpixels/network_lib
  *
  * This library is put in the public domain; you can redistribute it and/or modify it without any restrictions.
@@ -23,7 +24,7 @@
 #include <foundation/platform.h>
 
 
-#if defined( MDNS_COMPILE ) && MDNS_COMPILE
+#if defined(MDNS_COMPILE) && MDNS_COMPILE
 #  ifdef __cplusplus
 #  define MDNS_EXTERN extern "C"
 #  define MDNS_API extern "C"

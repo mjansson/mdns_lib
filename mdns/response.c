@@ -12,9 +12,11 @@
  * is always available at
  *
  * https://github.com/rampantpixels/foundation_lib
+ *
  * https://github.com/rampantpixels/network_lib
  *
  * This library is put in the public domain; you can redistribute it and/or modify it without any restrictions.
  *
  */
 
+#include <mdns/mdns.h>
