@@ -1,4 +1,4 @@
-/* query.c  -  mDNS library  -  Public Domain  -  2015 Mattias Jansson / Rampant Pixels
+/* string.h  -  mDNS library  -  Public Domain  -  2015 Mattias Jansson / Rampant Pixels
  *
  * This library provides a cross-platform mDNS and DNS-SD library in C based
  * on our foundation and network libraries. The implementation is based on RFC 6762
@@ -19,5 +19,16 @@
  *
  */
 
-#include <mdns/mdns.h>
-#include <foundation/foundation.h>
+#pragma once
+
+#include <foundation/platform.h>
+
+#include <mdns/types.h>
+
+MDNS_API string_t
+mdns_string_extract(const void* buffer, size_t size, size_t* offset,
+                    char* str, size_t capacity);
+
+MDNS_API bool
+mdns_string_equal(const void* buffer_lhs, size_t size_lhs, size_t* ofs_lhs,
+                  const void* buffer_rhs, size_t size_rhs, size_t* ofs_rhs);

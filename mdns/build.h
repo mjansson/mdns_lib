@@ -44,3 +44,4 @@
 
 
 #define MDNS_QUERY_SIZE_DEFAULT             512
+#define MDNS_DISCOVERY_SIZE_DEFAULT         512

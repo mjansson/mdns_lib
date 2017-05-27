@@ -24,35 +24,3 @@
 #include <foundation/platform.h>
 
 #include <mdns/types.h>
-#include <mdns/hashstrings.h>
-
-MDNS_API mdns_record_t*
-mdns_record_allocate(void);
-
-MDNS_API void
-mdns_record_initialize(mdns_record_t* record);
-
-MDNS_API void
-mdns_record_finalize(mdns_record_t* record);
-
-MDNS_API void
-mdns_record_deallocate(mdns_record_t* record);
-
-MDNS_API void
-mdns_record_add_address(mdns_record_t* record, network_address_t* address);
-
-MDNS_API void
-mdns_record_remove_address(mdns_record_t* record, network_address_t* address);
-
-MDNS_API network_address_t**
-mdns_record_address(mdns_record_t* record);
-
-MDNS_API void
-mdns_record_add_txt(mdns_record_t* record, const char* variable, const char* value);
-
-MDNS_API void
-mdns_record_remove_txt(mdns_record_t* record, const char* variable);
-
-MDNS_API mdns_txt_t*
-mdns_record_txt(mdns_record_t* record);
-

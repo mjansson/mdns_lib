@@ -22,39 +22,6 @@
 #pragma once
 
 #include <foundation/platform.h>
+#include <network/types.h>
 
 #include <mdns/types.h>
-#include <mdns/hashstrings.h>
-
-MDNS_API mdns_service_t*
-mdns_service_allocate(void);
-
-MDNS_API void
-mdns_service_initialize(mdns_service_t* service);
-
-MDNS_API void
-mdns_service_finalize(mdns_service_t* service);
-
-MDNS_API void
-mdns_service_deallocate(mdns_service_t* service);
-
-MDNS_API object_t
-mdns_service_socket(mdns_service_t* service);
-
-MDNS_API void
-mdns_service_set_socket(object_t sock);
-
-MDNS_API void
-mdns_service_run(mdns_service_t* service);
-
-MDNS_API void
-mdns_service_process(mdns_service_t* service);
-
-MDNS_API void
-mdns_services_add(mdns_service_t* service, const char* name, mdns_record_t* record);
-
-MDNS_API void
-mdns_service_remove(mdns_service_t* service, const char* name);
-
-MDNS_API mdns_record_t*
-mdns_service_query(mdns_service_t* service, const mdns_query_t* query);

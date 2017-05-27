@@ -24,19 +24,3 @@
 #include <foundation/platform.h>
 
 #include <mdns/types.h>
-#include <mdns/hashstrings.h>
-
-MDNS_API mdns_query_t*
-mdns_query_allocate(uint16_t capacity, const char* name);
-
-MDNS_API void
-mdns_query_initialize(mdns_query_t* query, uint16_t capacity, const char* name);
-
-MDNS_API void
-mdns_query_finalize(mdns_query_t* query);
-
-MDNS_API void
-mdns_query_deallocate(mdns_query_t* query);
-
-MDNS_API void
-mdns_query_append(mdns_query_t* query, const char* name);

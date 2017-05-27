@@ -17,7 +17,7 @@ writer = generator.writer
 toolchain = generator.toolchain
 
 mdns_lib = generator.lib( module = 'mdns', sources = [
-  'discovery.c', 'mdns.c', 'query.c', 'response.c', 'service.c', 'version.c' ] )
+  'discovery.c', 'mdns.c', 'query.c', 'response.c', 'service.c', 'socket.c', 'string.c', 'version.c' ] )
 
 #if not target.is_ios() and not target.is_android():
 #  configs = [ config for config in toolchain.configs if config not in [ 'profile', 'deploy' ] ]

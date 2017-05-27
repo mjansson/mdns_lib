@@ -26,11 +26,13 @@
 #include <mdns/types.h>
 #include <mdns/hashstrings.h>
 
+#include <mdns/socket.h>
 #include <mdns/query.h>
 #include <mdns/record.h>
 #include <mdns/response.h>
 #include <mdns/service.h>
-
+#include <mdns/string.h>
+#include <mdns/discovery.h>
 
 MDNS_API int
 mdns_module_initialize(const mdns_config_t config);

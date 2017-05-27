@@ -1,4 +1,4 @@
-/* query.c  -  mDNS library  -  Public Domain  -  2015 Mattias Jansson / Rampant Pixels
+/* socket.h  -  mDNS library  -  Public Domain  -  2014 Mattias Jansson / Rampant Pixels
  *
  * This library provides a cross-platform mDNS and DNS-SD library in C based
  * on our foundation and network libraries. The implementation is based on RFC 6762
@@ -19,5 +19,15 @@
  *
  */
 
-#include <mdns/mdns.h>
-#include <foundation/foundation.h>
+#pragma once
+
+#include <foundation/platform.h>
+#include <network/types.h>
+
+#include <mdns/types.h>
+
+MDNS_API socket_t*
+mdns_socket_allocate(void);
+
+MDNS_API bool
+mdns_socket_bind(socket_t* sock);
