@@ -57,7 +57,7 @@ typedef enum mdns_class        mdns_class_t;
 typedef int (* mdns_record_callback_fn)(const network_address_t* from,
                                         mdns_entry_type_t entry, uint16_t type,
                                         uint16_t rclass, uint32_t ttl,
-                                        const void* data, size_t offset, size_t length);
+                                        const void* data, size_t size, size_t offset, size_t length);
 
 typedef struct mdns_config_t       mdns_config_t;
 typedef struct mdns_record_srv_t   mdns_record_srv_t;

@@ -64,10 +64,9 @@ static int
 query_callback(const network_address_t* from,
                mdns_entry_type_t entry, uint16_t type,
                uint16_t rclass, uint32_t ttl,
-               const void* data, size_t offset, size_t length) {
+               const void* data, size_t size, size_t offset, size_t length) {
 	char addrbuffer[NETWORK_ADDRESS_NUMERIC_MAX_LENGTH];
 	char namebuffer[256] FOUNDATION_ALIGN(8);
-	size_t size = offset + length;
 	FOUNDATION_UNUSED(entry);
 	string_t fromaddrstr = network_address_to_string(addrbuffer, sizeof(addrbuffer), from, true);
 	const char* entrytype = (entry == MDNS_ENTRYTYPE_ANSWER) ? "answer" :

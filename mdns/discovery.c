@@ -102,6 +102,7 @@ mdns_discovery_recv(socket_t* sock, void* buffer, size_t capacity,
 			return 0;
 	}
 
+	bool do_callback = true;
 	size_t records = 0;
 	for (i = 0; i < answer_rrs; ++i) {
 		size_t ofs = (size_t)pointer_diff(data, buffer);
@@ -116,11 +117,11 @@ mdns_discovery_recv(socket_t* sock, void* buffer, size_t capacity,
 		uint32_t ttl = byteorder_bigendian32(*(uint32_t*)(void*)data); data += 2;
 		uint16_t length = byteorder_bigendian16(*data++);
 
-		if (is_answer) {
+		if (is_answer && do_callback) {
 			++records;
 			if (callback(source, MDNS_ENTRYTYPE_ANSWER, type, rclass, ttl, buffer,
-			             (size_t)pointer_diff(data, buffer), length))
-				break;
+			             (size_t)pointer_diff(data, buffer), data_size, length))
+				do_callback = false;
 		}
 		data = pointer_offset(data, length);
 	}

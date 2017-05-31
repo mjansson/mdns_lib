@@ -41,7 +41,7 @@ mdns_records_parse(const network_address_t* from, const void* buffer, size_t siz
 
 		if (do_callback) {
 			++parsed;
-			if (callback(from, type, rtype, rclass, ttl, buffer, *offset, length))
+			if (callback(from, type, rtype, rclass, ttl, buffer, size, *offset, length))
 				do_callback = false;
 		}
 
