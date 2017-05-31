@@ -31,4 +31,4 @@ mdns_discovery_send(socket_t* sock);
 
 MDNS_API size_t
 mdns_discovery_recv(socket_t* sock, void* buffer, size_t capacity,
-                    mdns_record_callback_t callback);
+                    mdns_record_callback_fn callback);

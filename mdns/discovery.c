@@ -63,7 +63,7 @@ mdns_discovery_send(socket_t* sock) {
 
 size_t
 mdns_discovery_recv(socket_t* sock, void* buffer, size_t capacity,
-                    mdns_record_callback_t callback) {
+                    mdns_record_callback_fn callback) {
 	const network_address_t* source;
 	size_t data_size = udp_socket_recvfrom(sock, buffer, capacity, &source);
 	if (!data_size)
@@ -75,14 +75,14 @@ mdns_discovery_recv(socket_t* sock, void* buffer, size_t capacity,
 	uint16_t flags          = byteorder_bigendian16(*data++);
 	uint16_t questions      = byteorder_bigendian16(*data++);
 	uint16_t answer_rrs     = byteorder_bigendian16(*data++);
-	++data;// authority_rrs
-	++data;// additional_rrs
+	uint16_t authority_rrs  = byteorder_bigendian16(*data++);
+	uint16_t additional_rrs = byteorder_bigendian16(*data++);
 
 	if (transaction_id || (flags != 0x8400))
 		return 0; //Not a reply to our question
 
 	if (questions > 1)
-		return 0; //Not a reply to our single question, but accept 0 as some impl does not bounce question
+		return 0;
 
 	int i;
 	for (i = 0; i < questions; ++i) {
@@ -116,15 +116,20 @@ mdns_discovery_recv(socket_t* sock, void* buffer, size_t capacity,
 		uint32_t ttl = byteorder_bigendian32(*(uint32_t*)(void*)data); data += 2;
 		uint16_t length = byteorder_bigendian16(*data++);
 
-		if (is_answer && (type == MDNS_RECORDTYPE_PTR)) {
+		if (is_answer) {
 			++records;
-			if (callback(source, type, rclass, ttl, buffer,
+			if (callback(source, MDNS_ENTRYTYPE_ANSWER, type, rclass, ttl, buffer,
 			             (size_t)pointer_diff(data, buffer), length))
 				break;
 		}
-
 		data = pointer_offset(data, length);
 	}
+
+	size_t offset = (size_t)pointer_diff(data, buffer);
+	records += mdns_records_parse(source, buffer, data_size, &offset,
+	                              MDNS_ENTRYTYPE_AUTHORITY, authority_rrs, callback);
+	records += mdns_records_parse(source, buffer, data_size, &offset,
+	                              MDNS_ENTRYTYPE_ADDITIONAL, additional_rrs, callback);
 
 	return records;
 }

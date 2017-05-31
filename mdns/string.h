@@ -30,5 +30,11 @@ mdns_string_extract(const void* buffer, size_t size, size_t* offset,
                     char* str, size_t capacity);
 
 MDNS_API bool
+mdns_string_skip(const void* buffer, size_t size, size_t* offset);
+
+MDNS_API bool
 mdns_string_equal(const void* buffer_lhs, size_t size_lhs, size_t* ofs_lhs,
                   const void* buffer_rhs, size_t size_rhs, size_t* ofs_rhs);
+
+MDNS_API void*
+mdns_string_make(void* data, size_t capacity, const char* name, size_t length);

@@ -102,6 +102,25 @@ mdns_string_extract(const void* buffer, size_t size, size_t* offset,
 }
 
 bool
+mdns_string_skip(const void* buffer, size_t size, size_t* offset) {
+	size_t cur = *offset;
+	mdns_string_pair_t substr;
+	do {
+		substr = get_next_substring(buffer, size, cur);
+		if (substr.offset == MDNS_INVALID_POS)
+			return false;
+		if (substr.ref) {
+			*offset = cur + 2;
+			return true;
+		}
+		cur = substr.offset + substr.length;
+	} while (substr.length);
+
+	*offset = cur + 1;
+	return true;
+}
+
+bool
 mdns_string_equal(const void* buffer_lhs, size_t size_lhs, size_t* ofs_lhs,
                   const void* buffer_rhs, size_t size_rhs, size_t* ofs_rhs) {
 	size_t lhs_cur = *ofs_lhs;
@@ -137,4 +156,40 @@ mdns_string_equal(const void* buffer_lhs, size_t size_lhs, size_t* ofs_lhs,
 	*ofs_rhs = rhs_end;
 
 	return true;
+}
+
+void*
+mdns_string_make(void* data, size_t capacity, const char* name, size_t length) {
+	size_t pos = 0;
+	size_t last_pos = 0;
+	size_t remain = capacity;
+	unsigned char* dest = data;
+	while ((last_pos < length) && ((pos = string_find(name, length, '.', last_pos)) != STRING_NPOS)) {
+		size_t sublength = pos - last_pos;
+		if (sublength < remain) {
+			*dest = (unsigned char)sublength;
+			memcpy(dest + 1, name + last_pos, sublength);
+			dest += sublength + 1;
+			remain -= sublength + 1;
+		}
+		else {
+			return dest;
+		}
+		last_pos = pos + 1;
+	}
+	if (last_pos < length) {
+		size_t sublength = length - last_pos;
+		if (sublength < capacity) {
+			*dest = (unsigned char)sublength;
+			memcpy(dest + 1, name + last_pos, sublength);
+			dest += sublength + 1;
+			remain -= sublength + 1;
+		}
+		else {
+			return dest;
+		}
+	}
+	if (remain)
+		*dest++ = 0;
+	return dest;
 }

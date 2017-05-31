@@ -24,3 +24,12 @@
 #include <foundation/platform.h>
 
 #include <mdns/types.h>
+#include <network/types.h>
+
+MDNS_API void
+mdns_query_send(socket_t* sock, mdns_record_type_t type, const char* name, size_t length,
+                void* buffer, size_t capacity);
+
+MDNS_API size_t
+mdns_query_recv(socket_t* sock, void* buffer, size_t capacity,
+                mdns_record_callback_fn callback);
