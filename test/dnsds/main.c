@@ -162,6 +162,24 @@ DECLARE_TEST(dnsds, query) {
 		thread_sleep(100);
 	}
 
+	mdns_query_send(sock_mdns, MDNS_RECORDTYPE_PTR, STRING_CONST("_spotify-connect._tcp.local."), databuf,
+	                sizeof(databuf));
+
+	iloop = 0;
+	while (iloop++ < 30) {
+		mdns_query_recv(sock_mdns, databuf, sizeof(databuf), query_callback);
+		thread_sleep(100);
+	}
+
+	mdns_query_send(sock_mdns, MDNS_RECORDTYPE_PTR, STRING_CONST("_googlecast._tcp.local."), databuf,
+	                sizeof(databuf));
+
+	iloop = 0;
+	while (iloop++ < 30) {
+		mdns_query_recv(sock_mdns, databuf, sizeof(databuf), query_callback);
+		thread_sleep(100);
+	}
+
 	mdns_query_send(sock_mdns, MDNS_RECORDTYPE_SRV, STRING_CONST("Tinybook._ssh._tcp.local."), databuf,
 	                sizeof(databuf));
 

@@ -91,7 +91,8 @@ mdns_string_extract(const void* buffer, size_t size, size_t* offset,
 			}
 		}
 		cur = substr.offset + substr.length;
-	} while (substr.length);
+	}
+	while (substr.length);
 
 	if (end == MDNS_INVALID_POS)
 		end = cur + 1;
@@ -114,7 +115,8 @@ mdns_string_skip(const void* buffer, size_t size, size_t* offset) {
 			return true;
 		}
 		cur = substr.offset + substr.length;
-	} while (substr.length);
+	}
+	while (substr.length);
 
 	*offset = cur + 1;
 	return true;
@@ -132,11 +134,10 @@ mdns_string_equal(const void* buffer_lhs, size_t size_lhs, size_t* ofs_lhs,
 	do {
 		lhs_substr = get_next_substring(buffer_lhs, size_lhs, lhs_cur);
 		rhs_substr = get_next_substring(buffer_rhs, size_rhs, rhs_cur);
-		if ((lhs_substr.offset == MDNS_INVALID_POS) || (rhs_substr.offset == MDNS_INVALID_POS) ||
-		        (lhs_substr.length != rhs_substr.length))
+		if ((lhs_substr.offset == MDNS_INVALID_POS) || (rhs_substr.offset == MDNS_INVALID_POS))
 			return false;
-		if (memcmp(pointer_offset_const(buffer_lhs, lhs_substr.offset), pointer_offset_const(buffer_rhs,
-		           rhs_substr.offset), lhs_substr.length))
+		if (!string_equal_nocase(pointer_offset_const(buffer_lhs, lhs_substr.offset), lhs_substr.length,
+		                         pointer_offset_const(buffer_rhs, rhs_substr.offset), rhs_substr.length))
 			return false;
 		if (lhs_substr.ref && (lhs_end == MDNS_INVALID_POS))
 			lhs_end = lhs_cur + 2;

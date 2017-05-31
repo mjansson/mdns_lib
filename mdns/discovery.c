@@ -120,7 +120,7 @@ mdns_discovery_recv(socket_t* sock, void* buffer, size_t capacity,
 		if (is_answer && do_callback) {
 			++records;
 			if (callback(source, MDNS_ENTRYTYPE_ANSWER, type, rclass, ttl, buffer,
-			             (size_t)pointer_diff(data, buffer), data_size, length))
+			             data_size, (size_t)pointer_diff(data, buffer), length))
 				do_callback = false;
 		}
 		data = pointer_offset(data, length);
