@@ -3,7 +3,6 @@
 """Ninja toolchain abstraction for Android platform"""
 
 import os
-import urlparse
 import subprocess
 
 import toolchain
@@ -82,7 +81,7 @@ class Android(object):
       else:
         self.hostarchname = 'windows-x86'
     elif self.host.is_linux():
-        localarch = subprocess.check_output(['uname', '-m']).strip()
+        localarch = toolchain.check_output(['uname', '-m'])
         if localarch == 'x86_64':
           self.hostarchname = 'linux-x86_64'
         else:
