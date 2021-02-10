@@ -28,5 +28,5 @@
 
 //! Service incoming multicast DNS-SD and mDNS query requests. The socket should have been bound to port MDNS_PORT using
 //! mdns_socket_bind. Buffer must be 32 bit aligned. Returns the number of queries parsed.
-static size_t
+MDNS_API size_t
 mdns_service_listen(socket_t* socket, void* buffer, size_t capacity, mdns_record_callback_fn callback, void* user_data);

@@ -24,24 +24,26 @@ query_callback(socket_t* sock, const network_address_t* from, mdns_entry_type_t 
 	if (rtype == MDNS_RECORDTYPE_PTR) {
 		string_const_t namestr =
 		    mdns_record_parse_ptr(data, size, record_offset, record_length, namebuffer, sizeof(namebuffer));
-		log_infof(HASH_MDNS, "%.*s : %s %.*s PTR %.*s rclass 0x%x ttl %u length %d\n", STRING_FORMAT(fromaddrstr),
-		          entrytype, STRING_FORMAT(entrystr), STRING_FORMAT(namestr), rclass, ttl, (int)record_length);
+		log_infof(HASH_MDNS, STRING_CONST("%.*s : %s %.*s PTR %.*s rclass 0x%x ttl %u length %d"),
+		          STRING_FORMAT(fromaddrstr), entrytype, STRING_FORMAT(entrystr), STRING_FORMAT(namestr), rclass, ttl,
+		          (int)record_length);
 	} else if (rtype == MDNS_RECORDTYPE_SRV) {
 		mdns_record_srv_t srv =
 		    mdns_record_parse_srv(data, size, record_offset, record_length, namebuffer, sizeof(namebuffer));
-		log_infof(HASH_MDNS, "%.*s : %s %.*s SRV %.*s priority %d weight %d port %d\n", STRING_FORMAT(fromaddrstr),
-		          entrytype, STRING_FORMAT(entrystr), STRING_FORMAT(srv.name), srv.priority, srv.weight, srv.port);
+		log_infof(HASH_MDNS, STRING_CONST("%.*s : %s %.*s SRV %.*s priority %d weight %d port %d"),
+		          STRING_FORMAT(fromaddrstr), entrytype, STRING_FORMAT(entrystr), STRING_FORMAT(srv.name), srv.priority,
+		          srv.weight, srv.port);
 	} else if (rtype == MDNS_RECORDTYPE_A) {
 		network_address_ipv4_t addr;
 		mdns_record_parse_a(data, size, record_offset, record_length, &addr);
 		string_t addrstr = network_address_to_string(namebuffer, sizeof(namebuffer), (network_address_t*)&addr, false);
-		log_infof(HASH_MDNS, "%.*s : %s %.*s A %.*s\n", STRING_FORMAT(fromaddrstr), entrytype, STRING_FORMAT(entrystr),
-		          STRING_FORMAT(addrstr));
+		log_infof(HASH_MDNS, STRING_CONST("%.*s : %s %.*s A %.*s"), STRING_FORMAT(fromaddrstr), entrytype,
+		          STRING_FORMAT(entrystr), STRING_FORMAT(addrstr));
 	} else if (rtype == MDNS_RECORDTYPE_AAAA) {
 		network_address_ipv6_t addr;
 		mdns_record_parse_aaaa(data, size, record_offset, record_length, &addr);
 		string_t addrstr = network_address_to_string(namebuffer, sizeof(namebuffer), (network_address_t*)&addr, false);
-		log_infof(HASH_MDNS, "%.*s : %s %.*s AAAA %.*s\n", STRING_FORMAT(fromaddrstr), entrytype,
+		log_infof(HASH_MDNS, STRING_CONST("%.*s : %s %.*s AAAA %.*s"), STRING_FORMAT(fromaddrstr), entrytype,
 		          STRING_FORMAT(entrystr), STRING_FORMAT(addrstr));
 	} else if (rtype == MDNS_RECORDTYPE_TXT) {
 		mdns_record_txt_t records[16];
@@ -49,17 +51,18 @@ query_callback(socket_t* sock, const network_address_t* from, mdns_entry_type_t 
 		                                      sizeof(records) / sizeof(records[0]));
 		for (size_t itxt = 0; itxt < parsed; ++itxt) {
 			if (records[itxt].value.length) {
-				log_infof(HASH_MDNS, "%.*s : %s %.*s TXT %.*s = %.*s\n", STRING_FORMAT(fromaddrstr), entrytype,
-				          STRING_FORMAT(entrystr), STRING_FORMAT(records[itxt].key),
+				log_infof(HASH_MDNS, STRING_CONST("%.*s : %s %.*s TXT %.*s = %.*s"), STRING_FORMAT(fromaddrstr),
+				          entrytype, STRING_FORMAT(entrystr), STRING_FORMAT(records[itxt].key),
 				          STRING_FORMAT(records[itxt].value));
 			} else {
-				log_infof(HASH_MDNS, "%.*s : %s %.*s TXT %.*s\n", STRING_FORMAT(fromaddrstr), entrytype,
+				log_infof(HASH_MDNS, STRING_CONST("%.*s : %s %.*s TXT %.*s"), STRING_FORMAT(fromaddrstr), entrytype,
 				          STRING_FORMAT(entrystr), STRING_FORMAT(records[itxt].key));
 			}
 		}
 	} else {
-		log_infof(HASH_MDNS, "%.*s : %s %.*s type %u rclass 0x%x ttl %u length %d\n", STRING_FORMAT(fromaddrstr),
-		          entrytype, STRING_FORMAT(entrystr), rtype, rclass, ttl, (int)record_length);
+		log_infof(HASH_MDNS, STRING_CONST("%.*s : %s %.*s type %u rclass 0x%x ttl %u length %d"),
+		          STRING_FORMAT(fromaddrstr), entrytype, STRING_FORMAT(entrystr), rtype, rclass, ttl,
+		          (int)record_length);
 	}
 	return 0;
 }

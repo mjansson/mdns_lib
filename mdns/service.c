@@ -25,7 +25,7 @@
 
 extern const uint8_t mdns_services_query[46];
 
-static size_t
+size_t
 mdns_service_listen(socket_t* sock, void* buffer, size_t capacity, mdns_record_callback_fn callback, void* user_data) {
 	network_address_t* addr;
 	size_t data_size = udp_socket_recvfrom(sock, buffer, capacity, &addr);
