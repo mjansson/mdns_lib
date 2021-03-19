@@ -53,4 +53,5 @@ mdns_query_recv(socket_t* sock, void* buffer, size_t capacity, mdns_record_callb
 MDNS_API int
 mdns_query_answer(socket_t* sock, const network_address_t* address, void* buffer, size_t capacity, uint16_t query_id,
                   const char* service, size_t service_length, const char* hostname, size_t hostname_length,
-                  uint32_t ipv4, const uint8_t* ipv6, uint16_t port, const char* txt, size_t txt_length);
+                  const network_address_ipv4_t* ipv4, const network_address_ipv6_t* ipv6, uint16_t port,
+                  const char* txt, size_t txt_length);

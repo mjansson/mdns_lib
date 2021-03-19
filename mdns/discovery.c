@@ -75,7 +75,6 @@ mdns_discovery_recv(socket_t* sock, void* buffer, size_t capacity, mdns_record_c
 			return 0;
 	}
 
-	int do_callback = (callback ? 1 : 0);
 	for (i = 0; i < answer_rrs; ++i) {
 		size_t ofs = pointer_diff(data, buffer);
 		size_t verify_ofs = 12;
@@ -96,23 +95,36 @@ mdns_discovery_recv(socket_t* sock, void* buffer, size_t capacity, mdns_record_c
 		if (length > (data_size - ofs))
 			return 0;
 
-		if (is_answer && do_callback) {
+		if (is_answer) {
 			++records;
-			ofs = pointer_diff(data, buffer);
-			if (callback(sock, address, MDNS_ENTRYTYPE_ANSWER, query_id, rtype, rclass, ttl, buffer, data_size,
-			             name_offset, name_length, ofs, length, user_data))
-				do_callback = 0;
+			if (callback) {
+				ofs = pointer_diff(data, buffer);
+				if (callback(sock, address, MDNS_ENTRYTYPE_ANSWER, query_id, rtype, rclass, ttl, buffer, data_size,
+				             name_offset, name_length, ofs, length, user_data))
+					return records;
+			}
 		}
 		data = pointer_offset_const(data, length);
 	}
+	size_t total_records = records;
 
 	size_t offset = pointer_diff(data, buffer);
-	records += mdns_records_parse(sock, address, buffer, data_size, &offset, MDNS_ENTRYTYPE_AUTHORITY, query_id,
-	                              authority_rrs, callback, user_data);
-	records += mdns_records_parse(sock, address, buffer, data_size, &offset, MDNS_ENTRYTYPE_ADDITIONAL, query_id,
-	                              additional_rrs, callback, user_data);
+	records = mdns_records_parse(sock, address, buffer, data_size, &offset, MDNS_ENTRYTYPE_AUTHORITY, query_id,
+	                             authority_rrs, callback, user_data);
+	total_records += records;
+	if (records != authority_rrs)
+		return total_records;
 
-	return records;
+	records = mdns_records_parse(sock, address, buffer, data_size, &offset, MDNS_ENTRYTYPE_ADDITIONAL, query_id,
+	                             additional_rrs, callback, user_data);
+	total_records += records;
+	if (records != additional_rrs)
+		return total_records;
+
+	if (callback)
+		callback(sock, address, MDNS_ENTRYTYPE_END, query_id, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+
+	return total_records;
 }
 
 int

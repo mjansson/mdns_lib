@@ -121,7 +121,6 @@ mdns_records_parse(socket_t* sock, const network_address_t* from, const void* bu
                    mdns_entry_type_t type, uint16_t query_id, size_t records, mdns_record_callback_fn callback,
                    void* user_data) {
 	size_t parsed = 0;
-	int do_callback = (callback ? 1 : 0);
 	for (size_t i = 0; i < records; ++i) {
 		size_t name_offset = *offset;
 		mdns_string_skip(buffer, size, offset);
@@ -138,11 +137,11 @@ mdns_records_parse(socket_t* sock, const network_address_t* from, const void* bu
 
 		*offset += 10;
 
-		if (do_callback && (length <= (size - (*offset)))) {
+		if (callback && (length <= (size - (*offset)))) {
 			++parsed;
 			if (callback(sock, from, type, query_id, rtype, rclass, ttl, buffer, size, name_offset, name_length,
 			             *offset, length, user_data))
-				do_callback = 0;
+				break;
 		}
 
 		*offset += length;

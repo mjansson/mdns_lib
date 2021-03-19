@@ -106,21 +106,38 @@ mdns_query_recv(socket_t* sock, void* buffer, size_t capacity, mdns_record_callb
 		data += 2;
 	}
 
+	size_t total_records = 0;
 	size_t records = 0;
 	size_t offset = pointer_diff(data, buffer);
-	records += mdns_records_parse(sock, address, buffer, data_size, &offset, MDNS_ENTRYTYPE_ANSWER, query_id,
-	                              answer_rrs, callback, user_data);
-	records += mdns_records_parse(sock, address, buffer, data_size, &offset, MDNS_ENTRYTYPE_AUTHORITY, query_id,
-	                              authority_rrs, callback, user_data);
-	records += mdns_records_parse(sock, address, buffer, data_size, &offset, MDNS_ENTRYTYPE_ADDITIONAL, query_id,
-	                              additional_rrs, callback, user_data);
-	return records;
+	records = mdns_records_parse(sock, address, buffer, data_size, &offset, MDNS_ENTRYTYPE_ANSWER, query_id, answer_rrs,
+	                             callback, user_data);
+	total_records += records;
+	if (records != answer_rrs)
+		return total_records;
+
+	records = mdns_records_parse(sock, address, buffer, data_size, &offset, MDNS_ENTRYTYPE_AUTHORITY, query_id,
+	                             authority_rrs, callback, user_data);
+	total_records += records;
+	if (records != authority_rrs)
+		return total_records;
+
+	records = mdns_records_parse(sock, address, buffer, data_size, &offset, MDNS_ENTRYTYPE_ADDITIONAL, query_id,
+	                             additional_rrs, callback, user_data);
+	total_records += records;
+	if (records != additional_rrs)
+		return total_records;
+
+	if (callback)
+		callback(sock, address, MDNS_ENTRYTYPE_END, query_id, 0, 0, 0, 0, 0, 0, 0, 0, 0, user_data);
+
+	return total_records;
 }
 
 int
 mdns_query_answer(socket_t* sock, const network_address_t* address, void* buffer, size_t capacity, uint16_t query_id,
                   const char* service, size_t service_length, const char* hostname, size_t hostname_length,
-                  uint32_t ipv4, const uint8_t* ipv6, uint16_t port, const char* txt, size_t txt_length) {
+                  const network_address_ipv4_t* ipv4, const network_address_ipv6_t* ipv6, uint16_t port,
+                  const char* txt, size_t txt_length) {
 	if (capacity < (sizeof(struct mdns_header_t) + 32 + service_length + hostname_length))
 		return -1;
 
@@ -223,7 +240,8 @@ mdns_query_answer(socket_t* sock, const network_address_t* address, void* buffer
 		data = mdns_htons(data, rclass);
 		data = mdns_htonl(data, a_ttl);
 		data = mdns_htons(data, 4);  // length
-		memcpy(data, &ipv4, 4);      // ipv4 address
+		uint32_t ip = htonl(network_address_ipv4_ip((const network_address_t*)ipv4));
+		memcpy(data, &ip, 4);  // ipv4 address
 		data = pointer_offset(data, 4);
 		remain = capacity - pointer_diff(data, buffer);
 	}
@@ -238,7 +256,8 @@ mdns_query_answer(socket_t* sock, const network_address_t* address, void* buffer
 		data = mdns_htons(data, rclass);
 		data = mdns_htonl(data, a_ttl);
 		data = mdns_htons(data, 16);  // length
-		memcpy(data, ipv6, 16);       // ipv6 address
+		struct in6_addr ip = network_address_ipv6_ip((const network_address_t*)ipv6);
+		memcpy(data, &ip, 16);  // ipv6 address
 		data = pointer_offset(data, 16);
 		remain = capacity - pointer_diff(data, buffer);
 	}
