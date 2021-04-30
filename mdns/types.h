@@ -23,6 +23,7 @@
 
 #include <foundation/platform.h>
 #include <foundation/types.h>
+#include <foundation/types.h>
 #include <network/types.h>
 
 #include <mdns/build.h>
@@ -43,7 +44,9 @@ enum mdns_record_type {
 	// IP6 Address [Thomson]
 	MDNS_RECORDTYPE_AAAA = 28,
 	// Server Selection [RFC2782]
-	MDNS_RECORDTYPE_SRV = 33
+	MDNS_RECORDTYPE_SRV = 33,
+	// Any available records
+	MDNS_RECORDTYPE_ANY = 255
 };
 
 enum mdns_entry_type {
@@ -67,7 +70,12 @@ typedef int (*mdns_record_callback_fn)(socket_t* sock, const network_address_t* 
 
 typedef struct mdns_config_t mdns_config_t;
 typedef struct mdns_string_pair_t mdns_string_pair_t;
+typedef struct mdns_string_table_t mdns_string_table_t;
+typedef struct mdns_record_t mdns_record_t;
 typedef struct mdns_record_srv_t mdns_record_srv_t;
+typedef struct mdns_record_ptr_t mdns_record_ptr_t;
+typedef struct mdns_record_a_t mdns_record_a_t;
+typedef struct mdns_record_aaaa_t mdns_record_aaaa_t;
 typedef struct mdns_record_txt_t mdns_record_txt_t;
 
 #ifdef _WIN32
@@ -88,6 +96,12 @@ struct mdns_string_pair_t {
 	int ref;
 };
 
+struct mdns_string_table_t {
+	size_t offset[16];
+	size_t count;
+	size_t next;
+};
+
 struct mdns_record_srv_t {
 	uint16_t priority;
 	uint16_t weight;
@@ -95,9 +109,33 @@ struct mdns_record_srv_t {
 	string_const_t name;
 };
 
+struct mdns_record_ptr_t {
+	string_const_t name;
+};
+
+struct mdns_record_a_t {
+	struct sockaddr_in addr;
+};
+
+struct mdns_record_aaaa_t {
+	struct sockaddr_in6 addr;
+};
+
 struct mdns_record_txt_t {
 	string_const_t key;
 	string_const_t value;
+};
+
+struct mdns_record_t {
+	string_const_t name;
+	mdns_record_type_t type;
+	union mdns_record_data {
+		mdns_record_ptr_t ptr;
+		mdns_record_srv_t srv;
+		mdns_record_a_t a;
+		mdns_record_aaaa_t aaaa;
+		mdns_record_txt_t txt;
+	} data;
 };
 
 struct mdns_header_t {

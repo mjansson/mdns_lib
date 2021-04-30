@@ -50,10 +50,10 @@ mdns_service_listen(socket_t* sock, void* buffer, size_t capacity, mdns_record_c
 		size_t question_offset = pointer_diff(data, buffer);
 		size_t offset = question_offset;
 		size_t verify_ofs = 12;
+		int dns_sd = 0;
 		if (mdns_string_equal(buffer, data_size, &offset, mdns_services_query, sizeof(mdns_services_query),
 		                      &verify_ofs)) {
-			if (flags || (questions != 1))
-				return 0;
+			dns_sd = 1;
 		} else {
 			offset = question_offset;
 			if (!mdns_string_skip(buffer, data_size, &offset))
@@ -68,12 +68,13 @@ mdns_service_listen(socket_t* sock, void* buffer, size_t capacity, mdns_record_c
 		// Make sure we get a question of class IN
 		if ((rclass & 0x7FFF) != MDNS_CLASS_IN)
 			return 0;
-
-		if (callback)
-			callback(sock, addr, MDNS_ENTRYTYPE_QUESTION, query_id, rtype, rclass, 0, buffer, data_size,
-			         question_offset, length, question_offset, length, user_data);
+		if (dns_sd && flags)
+			continue;
 
 		++parsed;
+		if (callback && callback(sock, addr, MDNS_ENTRYTYPE_QUESTION, query_id, rtype, rclass, 0, buffer, data_size,
+		                         question_offset, length, question_offset, length, user_data))
+			break;
 	}
 
 	return parsed;

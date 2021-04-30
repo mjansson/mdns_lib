@@ -137,10 +137,10 @@ mdns_records_parse(socket_t* sock, const network_address_t* from, const void* bu
 
 		*offset += 10;
 
-		if (callback && (length <= (size - (*offset)))) {
+		if (length <= (size - (*offset))) {
 			++parsed;
-			if (callback(sock, from, type, query_id, rtype, rclass, ttl, buffer, size, name_offset, name_length,
-			             *offset, length, user_data))
+			if (callback && callback(sock, from, type, query_id, rtype, rclass, ttl, buffer, size, name_offset,
+			                         name_length, *offset, length, user_data))
 				break;
 		}
 

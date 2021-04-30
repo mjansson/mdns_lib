@@ -19,6 +19,10 @@ toolchain = generator.toolchain
 mdns_lib = generator.lib( module = 'mdns', sources = [
   'discovery.c', 'mdns.c', 'query.c', 'record.c', 'service.c', 'socket.c', 'string.c', 'version.c' ] )
 
+#No test cases if we're a submodule
+if generator.is_subninja():
+  sys.exit()
+
 includepaths = generator.test_includepaths()
 
 extralibs = []

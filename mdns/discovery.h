@@ -36,9 +36,3 @@ mdns_discovery_send(socket_t* sock);
 //  responses parsed.
 MDNS_API size_t
 mdns_discovery_recv(socket_t* sock, void* buffer, size_t capacity, mdns_record_callback_fn callback, void* user_data);
-
-//! Send a unicast DNS-SD answer with a single record to the given address. Buffer must be 32 bit
-//  aligned. Returns 0 if success, or <0 if error.
-MDNS_API int
-mdns_discovery_answer(socket_t* sock, const network_address_t* address, void* buffer, size_t capacity,
-                      const char* record, size_t length);

@@ -97,12 +97,10 @@ mdns_discovery_recv(socket_t* sock, void* buffer, size_t capacity, mdns_record_c
 
 		if (is_answer) {
 			++records;
-			if (callback) {
-				ofs = pointer_diff(data, buffer);
-				if (callback(sock, address, MDNS_ENTRYTYPE_ANSWER, query_id, rtype, rclass, ttl, buffer, data_size,
-				             name_offset, name_length, ofs, length, user_data))
-					return records;
-			}
+			ofs = pointer_diff(data, buffer);
+			if (callback && callback(sock, address, MDNS_ENTRYTYPE_ANSWER, query_id, rtype, rclass, ttl, buffer,
+			                         data_size, name_offset, name_length, ofs, length, user_data))
+				return records;
 		}
 		data = pointer_offset_const(data, length);
 	}
@@ -125,41 +123,4 @@ mdns_discovery_recv(socket_t* sock, void* buffer, size_t capacity, mdns_record_c
 		callback(sock, address, MDNS_ENTRYTYPE_END, query_id, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 
 	return total_records;
-}
-
-int
-mdns_discovery_answer(socket_t* sock, const network_address_t* address, void* buffer, size_t capacity,
-                      const char* record, size_t length) {
-	if (capacity < (sizeof(mdns_services_query) + 32 + length))
-		return -1;
-
-	void* data = buffer;
-	// Basic reply structure
-	memcpy(data, mdns_services_query, sizeof(mdns_services_query));
-	// Flags
-	mdns_htons(pointer_offset(data, 2), 0x8400U);
-	// One answer
-	mdns_htons(pointer_offset(data, 6), 1);
-
-	// Fill in answer PTR record
-	data = pointer_offset(buffer, sizeof(mdns_services_query));
-	// Reference _services._dns-sd._udp.local. string in question
-	data = mdns_htons(data, 0xC000U | 12U);
-	// Type
-	data = mdns_htons(data, MDNS_RECORDTYPE_PTR);
-	// Rclass
-	data = mdns_htons(data, MDNS_CLASS_IN);
-	// TTL
-	data = mdns_htonl(data, 10);
-	// Record string length
-	void* record_length = data;
-	data = mdns_htons(data, 0);
-	uint8_t* record_data = (uint8_t*)data;
-	size_t remain = capacity - (sizeof(mdns_services_query) + 10);
-	record_data = (uint8_t*)mdns_string_make(record_data, remain, record, length);
-	mdns_htons(record_length, (uint16_t)pointer_diff(record_data, data));
-	*record_data++ = 0;
-
-	size_t tosend = pointer_diff(record_data, buffer);
-	return mdns_unicast_send(sock, address, buffer, tosend);
 }

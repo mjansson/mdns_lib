@@ -36,10 +36,15 @@ mdns_string_equal(const void* buffer_lhs, size_t size_lhs, size_t* ofs_lhs, cons
                   size_t* ofs_rhs);
 
 MDNS_API void*
-mdns_string_make(void* data, size_t capacity, const char* name, size_t length);
+mdns_string_make(void* buffer, size_t capacity, void* data, const char* name, size_t length,
+                 mdns_string_table_t* string_table);
 
 MDNS_API void*
 mdns_string_make_ref(void* data, size_t capacity, size_t ref_offset);
 
-MDNS_API void*
-mdns_string_make_with_ref(void* data, size_t capacity, const char* name, size_t length, size_t ref_offset);
+MDNS_API void
+mdns_string_table_add(mdns_string_table_t* string_table, size_t offset);
+
+MDNS_API size_t
+mdns_string_table_find(mdns_string_table_t* string_table, const void* buffer, size_t capacity, const char* str,
+                       size_t first_length, size_t total_length);
