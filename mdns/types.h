@@ -87,7 +87,7 @@ typedef ssize_t mdns_ssize_t;
 #endif
 
 struct mdns_config_t {
-	int __unused;
+	int unused;
 };
 
 struct mdns_string_pair_t {
