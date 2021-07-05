@@ -32,7 +32,7 @@ mdns_discovery_send(socket_t* sock) {
 
 size_t
 mdns_discovery_recv(socket_t* sock, void* buffer, size_t capacity, mdns_record_callback_fn callback, void* user_data) {
-	network_address_t* address;
+	const network_address_t* address;
 	size_t data_size = udp_socket_recvfrom(sock, buffer, capacity, &address);
 	if (!data_size)
 		return 0;
@@ -60,7 +60,7 @@ mdns_discovery_recv(socket_t* sock, void* buffer, size_t capacity, mdns_record_c
 
 	int i;
 	for (i = 0; i < questions; ++i) {
-		size_t ofs = pointer_diff(data, buffer);
+		size_t ofs = (size_t)pointer_diff(data, buffer);
 		size_t verify_ofs = 12;
 		// Verify it's our question, _services._dns-sd._udp.local.
 		if (!mdns_string_equal(buffer, data_size, &ofs, mdns_services_query, sizeof(mdns_services_query), &verify_ofs))
@@ -76,7 +76,7 @@ mdns_discovery_recv(socket_t* sock, void* buffer, size_t capacity, mdns_record_c
 	}
 
 	for (i = 0; i < answer_rrs; ++i) {
-		size_t ofs = pointer_diff(data, buffer);
+		size_t ofs = (size_t)pointer_diff(data, buffer);
 		size_t verify_ofs = 12;
 		// Verify it's an answer to our question, _services._dns-sd._udp.local.
 		size_t name_offset = ofs;
@@ -97,7 +97,7 @@ mdns_discovery_recv(socket_t* sock, void* buffer, size_t capacity, mdns_record_c
 
 		if (is_answer) {
 			++records;
-			ofs = pointer_diff(data, buffer);
+			ofs = (size_t)pointer_diff(data, buffer);
 			if (callback && callback(sock, address, MDNS_ENTRYTYPE_ANSWER, query_id, rtype, rclass, ttl, buffer,
 			                         data_size, name_offset, name_length, ofs, length, user_data))
 				return records;
@@ -106,7 +106,7 @@ mdns_discovery_recv(socket_t* sock, void* buffer, size_t capacity, mdns_record_c
 	}
 	size_t total_records = records;
 
-	size_t offset = pointer_diff(data, buffer);
+	size_t offset = (size_t)pointer_diff(data, buffer);
 	records = mdns_records_parse(sock, address, buffer, data_size, &offset, MDNS_ENTRYTYPE_AUTHORITY, query_id,
 	                             authority_rrs, callback, user_data);
 	total_records += records;

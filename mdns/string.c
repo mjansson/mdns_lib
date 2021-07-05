@@ -23,12 +23,12 @@
 
 #include <mdns/mdns.h>
 
-int
+static int
 mdns_is_string_ref(uint8_t val) {
 	return (0xC0 == (val & 0xC0));
 }
 
-mdns_string_pair_t
+static mdns_string_pair_t
 mdns_get_next_substring(const void* rawdata, size_t size, size_t offset) {
 	const uint8_t* buffer = (const uint8_t*)rawdata;
 	mdns_string_pair_t pair = {STRING_NPOS, 0, 0};
@@ -42,7 +42,7 @@ mdns_get_next_substring(const void* rawdata, size_t size, size_t offset) {
 		if (size < offset + 2)
 			return pair;
 
-		offset = mdns_ntohs(pointer_offset(buffer, offset)) & 0x3fff;
+		offset = mdns_ntohs(pointer_offset_const(buffer, offset)) & 0x3fff;
 		if (offset >= size)
 			return pair;
 
@@ -155,7 +155,7 @@ mdns_string_extract(const void* buffer, size_t size, size_t* offset, char* str, 
 	return result;
 }
 
-size_t
+static size_t
 mdns_string_find(const char* str, size_t length, char c, size_t offset) {
 	const void* found;
 	if (offset >= length)
@@ -171,7 +171,7 @@ mdns_string_make(void* buffer, size_t capacity, void* data, const char* name, si
                  mdns_string_table_t* string_table) {
 	size_t pos = 0;
 	size_t last_pos = 0;
-	size_t remain = capacity - pointer_diff(data, buffer);
+	size_t remain = capacity - (size_t)pointer_diff(data, buffer);
 	if (name[length - 1] == '.')
 		--length;
 	while (last_pos < length) {
@@ -179,7 +179,7 @@ mdns_string_make(void* buffer, size_t capacity, void* data, const char* name, si
 		size_t sub_length = ((pos != STRING_NPOS) ? pos : length) - last_pos;
 		size_t total_length = length - last_pos;
 
-		size_t ref_offset = mdns_string_table_find(string_table, buffer, capacity, pointer_offset(name, last_pos),
+		size_t ref_offset = mdns_string_table_find(string_table, buffer, capacity, pointer_offset_const(name, last_pos),
 		                                           sub_length, total_length);
 		if (ref_offset != STRING_NPOS)
 			return mdns_string_make_ref(data, remain, ref_offset);
@@ -189,11 +189,11 @@ mdns_string_make(void* buffer, size_t capacity, void* data, const char* name, si
 
 		*(unsigned char*)data = (unsigned char)sub_length;
 		memcpy(pointer_offset(data, 1), name + last_pos, sub_length);
-		mdns_string_table_add(string_table, pointer_diff(data, buffer));
+		mdns_string_table_add(string_table, (size_t)pointer_diff(data, buffer));
 
 		data = pointer_offset(data, sub_length + 1);
 		last_pos = ((pos != STRING_NPOS) ? pos + 1 : length);
-		remain = capacity - pointer_diff(data, buffer);
+		remain = capacity - (size_t)pointer_diff(data, buffer);
 	}
 
 	if (!remain)
@@ -223,7 +223,7 @@ mdns_string_table_find(mdns_string_table_t* string_table, const void* buffer, si
 		mdns_string_pair_t sub_string = mdns_get_next_substring(buffer, capacity, string_table->offset[istr]);
 		if (!sub_string.length || (sub_string.length != first_length))
 			continue;
-		if (memcmp(str, pointer_offset(buffer, sub_string.offset), sub_string.length))
+		if (memcmp(str, pointer_offset_const(buffer, sub_string.offset), sub_string.length))
 			continue;
 
 		// Initial substring matches, now match all remaining substrings
@@ -237,7 +237,7 @@ mdns_string_table_find(mdns_string_table_t* string_table, const void* buffer, si
 			sub_string = mdns_get_next_substring(buffer, capacity, sub_string.offset + sub_string.length);
 			if (!sub_string.length || (sub_string.length != current_length))
 				break;
-			if (memcmp(str + offset, pointer_offset(buffer, sub_string.offset), sub_string.length))
+			if (memcmp(str + offset, pointer_offset_const(buffer, sub_string.offset), sub_string.length))
 				break;
 
 			offset = dot_pos + 1;

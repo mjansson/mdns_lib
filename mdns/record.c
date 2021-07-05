@@ -56,7 +56,7 @@ network_address_ipv4_t*
 mdns_record_parse_a(const void* buffer, size_t size, size_t offset, size_t length, network_address_ipv4_t* addr) {
 	network_address_ipv4_initialize(addr);
 	if ((size >= offset + length) && (length == 4))
-		memcpy(&addr->saddr.sin_addr.s_addr, pointer_offset(buffer, offset), 4);
+		memcpy(&addr->saddr.sin_addr.s_addr, pointer_offset_const(buffer, offset), 4);
 	return addr;
 }
 
@@ -64,7 +64,7 @@ network_address_ipv6_t*
 mdns_record_parse_aaaa(const void* buffer, size_t size, size_t offset, size_t length, network_address_ipv6_t* addr) {
 	network_address_ipv6_initialize(addr);
 	if ((size >= offset + length) && (length == 16))
-		memcpy(&addr->saddr.sin6_addr, pointer_offset(buffer, offset), 16);
+		memcpy(&addr->saddr.sin6_addr, pointer_offset_const(buffer, offset), 16);
 	return addr;
 }
 
@@ -80,7 +80,7 @@ mdns_record_parse_txt(const void* buffer, size_t size, size_t offset, size_t len
 		end = size;
 
 	while ((offset < end) && (parsed < capacity)) {
-		strdata = pointer_offset(buffer, offset);
+		strdata = pointer_offset_const(buffer, offset);
 		sublength = *(const unsigned char*)strdata;
 
 		++strdata;
@@ -127,7 +127,7 @@ mdns_records_parse(socket_t* sock, const network_address_t* from, const void* bu
 		if (((*offset) + 10) > size)
 			return parsed;
 		size_t name_length = (*offset) - name_offset;
-		const uint16_t* data = pointer_offset(buffer, *offset);
+		const uint16_t* data = pointer_offset_const(buffer, *offset);
 
 		uint16_t rtype = mdns_ntohs(data++);
 		uint16_t rclass = mdns_ntohs(data++);

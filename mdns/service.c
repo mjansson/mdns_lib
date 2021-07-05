@@ -27,7 +27,7 @@ extern const uint8_t mdns_services_query[46];
 
 size_t
 mdns_service_listen(socket_t* sock, void* buffer, size_t capacity, mdns_record_callback_fn callback, void* user_data) {
-	network_address_t* addr;
+	const network_address_t* addr = 0;
 	size_t data_size = udp_socket_recvfrom(sock, buffer, capacity, &addr);
 	if (!data_size)
 		return 0;
@@ -47,7 +47,7 @@ mdns_service_listen(socket_t* sock, void* buffer, size_t capacity, mdns_record_c
 
 	size_t parsed = 0;
 	for (int iquestion = 0; iquestion < questions; ++iquestion) {
-		size_t question_offset = pointer_diff(data, buffer);
+		size_t question_offset = (size_t)pointer_diff(data, buffer);
 		size_t offset = question_offset;
 		size_t verify_ofs = 12;
 		int dns_sd = 0;
