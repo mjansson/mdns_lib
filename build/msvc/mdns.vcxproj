@@ -1,0 +1,51 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="Globals">
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>mdns</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <ProjectGuid>{CD7494ED-A0C7-423B-A067-CDC99F4ED4FB}</ProjectGuid>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <Import Project="$(SolutionDir)\build.default.props" />
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup>
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <ItemGroup>
+    <ClInclude Include="..\..\mdns\build.h" />
+    <ClInclude Include="..\..\mdns\discovery.h" />
+    <ClInclude Include="..\..\mdns\hashstrings.h" />
+    <ClInclude Include="..\..\mdns\mdns.h" />
+    <ClInclude Include="..\..\mdns\query.h" />
+    <ClInclude Include="..\..\mdns\record.h" />
+    <ClInclude Include="..\..\mdns\service.h" />
+    <ClInclude Include="..\..\mdns\socket.h" />
+    <ClInclude Include="..\..\mdns\string.h" />
+    <ClInclude Include="..\..\mdns\types.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\mdns\discovery.c" />
+    <ClCompile Include="..\..\mdns\mdns.c" />
+    <ClCompile Include="..\..\mdns\query.c" />
+    <ClCompile Include="..\..\mdns\record.c" />
+    <ClCompile Include="..\..\mdns\service.c" />
+    <ClCompile Include="..\..\mdns\socket.c" />
+    <ClCompile Include="..\..\mdns\string.c" />
+    <ClCompile Include="..\..\mdns\version.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="..\..\mdns\hashstrings.txt" />
+  </ItemGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\..\..\foundation;$(ProjectDir)..\..\..\foundation_lib;$(ProjectDir)..\..\..\network;$(ProjectDir)..\..\..\network_lib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>MDNS_COMPILE=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+</Project>
