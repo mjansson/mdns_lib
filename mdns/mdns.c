@@ -24,7 +24,7 @@
 #include <foundation/foundation.h>
 #include <network/network.h>
 
-static bool _mdns_initialized = false;
+static bool mdns_initialized = false;
 
 extern const uint8_t mdns_services_query[46];
 
@@ -49,25 +49,25 @@ int
 mdns_module_initialize(const mdns_config_t config) {
 	FOUNDATION_UNUSED(config);
 
-	if (_mdns_initialized)
+	if (mdns_initialized)
 		return 0;
 
-	_mdns_initialized = true;
+	mdns_initialized = true;
 
 	return 0;
 }
 
 void
 mdns_module_finalize(void) {
-	if (!_mdns_initialized)
+	if (!mdns_initialized)
 		return;
 
-	_mdns_initialized = false;
+	mdns_initialized = false;
 }
 
 bool
 mdns_module_is_initialized(void) {
-	return _mdns_initialized;
+	return mdns_initialized;
 }
 
 uint16_t
