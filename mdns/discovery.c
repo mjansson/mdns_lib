@@ -60,12 +60,12 @@ mdns_discovery_recv(socket_t* sock, void* buffer, size_t capacity, mdns_record_c
 
 	int i;
 	for (i = 0; i < questions; ++i) {
-		size_t ofs = (size_t)pointer_diff(data, buffer);
-		size_t verify_ofs = 12;
+		size_t offset = (size_t)pointer_diff(data, buffer);
+		size_t verify_offset = 12;
 		// Verify it's our question, _services._dns-sd._udp.local.
-		if (!mdns_string_equal(buffer, data_size, &ofs, mdns_services_query, sizeof(mdns_services_query), &verify_ofs))
+		if (!mdns_string_equal(buffer, data_size, &offset, mdns_services_query, sizeof(mdns_services_query), &verify_offset))
 			return 0;
-		data = pointer_offset_const(buffer, ofs);
+		data = pointer_offset_const(buffer, offset);
 
 		uint16_t rtype = mdns_ntohs(data++);
 		uint16_t rclass = mdns_ntohs(data++);
@@ -76,30 +76,32 @@ mdns_discovery_recv(socket_t* sock, void* buffer, size_t capacity, mdns_record_c
 	}
 
 	for (i = 0; i < answer_rrs; ++i) {
-		size_t ofs = (size_t)pointer_diff(data, buffer);
-		size_t verify_ofs = 12;
+		size_t offset = (size_t)pointer_diff(data, buffer);
+		size_t verify_offset = 12;
 		// Verify it's an answer to our question, _services._dns-sd._udp.local.
-		size_t name_offset = ofs;
+		size_t name_offset = offset;
 		int is_answer =
-		    mdns_string_equal(buffer, data_size, &ofs, mdns_services_query, sizeof(mdns_services_query), &verify_ofs);
-		size_t name_length = ofs - name_offset;
-		if ((ofs + 10) > data_size)
+		    mdns_string_equal(buffer, data_size, &offset, mdns_services_query, sizeof(mdns_services_query), &verify_offset);
+		if (!is_answer && !mdns_string_skip(buffer, data_size, &offset))
+ 			break;		    
+		size_t name_length = offset - name_offset;
+		if ((offset + 10) > data_size)
 			return records;
-		data = pointer_offset_const(buffer, ofs);
+		data = pointer_offset_const(buffer, offset);
 
 		uint16_t rtype = mdns_ntohs(data++);
 		uint16_t rclass = mdns_ntohs(data++);
 		uint32_t ttl = mdns_ntohl(data);
 		data += 2;
 		uint16_t length = mdns_ntohs(data++);
-		if (length > (data_size - ofs))
+		if (length > (data_size - offset))
 			return 0;
 
 		if (is_answer) {
 			++records;
-			ofs = (size_t)pointer_diff(data, buffer);
+			offset = (size_t)pointer_diff(data, buffer);
 			if (callback && callback(sock, address, MDNS_ENTRYTYPE_ANSWER, query_id, rtype, rclass, ttl, buffer,
-			                         data_size, name_offset, name_length, ofs, length, user_data))
+			                         data_size, name_offset, name_length, offset, length, user_data))
 				return records;
 		}
 		data = pointer_offset_const(data, length);

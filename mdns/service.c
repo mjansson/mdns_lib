@@ -37,22 +37,19 @@ mdns_service_listen(socket_t* sock, void* buffer, size_t capacity, mdns_record_c
 	uint16_t query_id = mdns_ntohs(data++);
 	uint16_t flags = mdns_ntohs(data++);
 	uint16_t questions = mdns_ntohs(data++);
-	/*
-	This data is unused at the moment, skip
 	uint16_t answer_rrs = mdns_ntohs(data++);
 	uint16_t authority_rrs = mdns_ntohs(data++);
 	uint16_t additional_rrs = mdns_ntohs(data++);
-	*/
-	data += 3;
 
-	size_t parsed = 0;
-	for (int iquestion = 0; iquestion < questions; ++iquestion) {
+	size_t records;
+ 	size_t total_records = 0;
+ 	for (int iquestion = 0; iquestion < questions; ++iquestion) {
 		size_t question_offset = (size_t)pointer_diff(data, buffer);
 		size_t offset = question_offset;
-		size_t verify_ofs = 12;
+		size_t verify_offset = 12;
 		int dns_sd = 0;
 		if (mdns_string_equal(buffer, data_size, &offset, mdns_services_query, sizeof(mdns_services_query),
-		                      &verify_ofs)) {
+		                      &verify_offset)) {
 			dns_sd = 1;
 		} else {
 			offset = question_offset;
@@ -64,18 +61,37 @@ mdns_service_listen(socket_t* sock, void* buffer, size_t capacity, mdns_record_c
 
 		uint16_t rtype = mdns_ntohs(data++);
 		uint16_t rclass = mdns_ntohs(data++);
+		uint16_t class_without_flushbit = rclass & ~MDNS_CACHE_FLUSH;
 
 		// Make sure we get a question of class IN
-		if ((rclass & 0x7FFF) != MDNS_CLASS_IN)
+		if (!((class_without_flushbit == MDNS_CLASS_IN) || (class_without_flushbit == MDNS_CLASS_ANY)))
 			return 0;
 		if (dns_sd && flags)
 			continue;
 
-		++parsed;
+		++total_records;
 		if (callback && callback(sock, addr, MDNS_ENTRYTYPE_QUESTION, query_id, rtype, rclass, 0, buffer, data_size,
 		                         question_offset, length, question_offset, length, user_data))
-			break;
+			return total_records;
 	}
 
-	return parsed;
+	size_t offset = (size_t)pointer_diff(data, buffer);
+	records = mdns_records_parse(sock, addr, buffer, data_size, &offset,
+	                             MDNS_ENTRYTYPE_ANSWER, query_id, answer_rrs, callback, user_data);
+	total_records += records;
+	if (records != answer_rrs)
+		return total_records;
+
+	records =
+	    mdns_records_parse(sock, addr, buffer, data_size, &offset,
+	                       MDNS_ENTRYTYPE_AUTHORITY, query_id, authority_rrs, callback, user_data);
+	total_records += records;
+	if (records != authority_rrs)
+		return total_records;
+
+	records = mdns_records_parse(sock, addr, buffer, data_size, &offset,
+	                             MDNS_ENTRYTYPE_ADDITIONAL, query_id, additional_rrs, callback,
+	                             user_data);
+
+	return total_records;
 }

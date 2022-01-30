@@ -53,8 +53,8 @@ mdns_query_recv(socket_t* sock, void* buffer, size_t capacity, mdns_record_callb
 MDNS_API int
 mdns_query_answer_unicast(socket_t* sock, const network_address_t* address, void* buffer, size_t capacity,
                           uint16_t query_id, mdns_record_type_t record_type, const char* name, size_t name_length,
-                          mdns_record_t answer, mdns_record_t* authority, size_t authority_count,
-                          mdns_record_t* additional, size_t additional_count);
+                          mdns_record_t answer, const mdns_record_t* authority, size_t authority_count,
+                          const mdns_record_t* additional, size_t additional_count);
 
 //! Send a variable multicast mDNS query answer to any question with variable number of records. Use
 //! the top bit of the query class field (MDNS_UNICAST_RESPONSE) in the query recieved to determine
@@ -62,12 +62,20 @@ mdns_query_answer_unicast(socket_t* sock, const network_address_t* address, void
 //! aligned. Returns 0 if success, or <0 if error.
 MDNS_API int
 mdns_query_answer_multicast(socket_t* sock, void* buffer, size_t capacity, mdns_record_t answer,
-                            mdns_record_t* authority, size_t authority_count, mdns_record_t* additional,
+                            const mdns_record_t* authority, size_t authority_count, const mdns_record_t* additional,
                             size_t additional_count);
 
 //! Send a variable multicast mDNS announcement (as an unsolicited answer) with variable number of
 //! records.Buffer must be 32 bit aligned. Returns 0 if success, or <0 if error. Use this on service
 //! startup to announce your instance to the local network.
 MDNS_API int
-mdns_announce_multicast(socket_t* sock, void* buffer, size_t capacity, mdns_record_t answer, mdns_record_t* authority,
-                        size_t authority_count, mdns_record_t* additional, size_t additional_count);
+mdns_announce_multicast(socket_t* sock, void* buffer, size_t capacity, mdns_record_t answer,
+                        const mdns_record_t* authority, size_t authority_count,
+                        const mdns_record_t* additional, size_t additional_count);
+
+//! Send a variable multicast mDNS announcement. Use this on service end for removing the resource
+//! from the local network. The records must be identical to the according announcement.
+MDNS_API int
+mdns_goodbye_multicast(socket_t* sock, void* buffer, size_t capacity, mdns_record_t answer,
+                       const mdns_record_t* authority, size_t authority_count,
+                       const mdns_record_t* additional, size_t additional_count);

@@ -140,20 +140,31 @@ DECLARE_TEST(dnssd, discover) {
 	if (sock_count > sock_capacity)
 		sock_count = sock_capacity;
 
+	size_t sock_bound_count = 0;
 	for (size_t isock = 0; isock < sock_count; ++isock) {
 		sock_mdns[isock] = udp_socket_allocate();
 		EXPECT_NE(sock_mdns, nullptr);
 
-		EXPECT_TRUE(mdns_socket_bind(sock_mdns[isock], local_address[isock]));
+		if (mdns_socket_bind(sock_mdns[isock], local_address[isock])) {
+			++sock_bound_count;
+		} else {
+			socket_deallocate(sock_mdns[isock]);
+			sock_mdns[isock] = nullptr;
+		}
 	}
+	EXPECT_GT(sock_bound_count, 0);
 
-	for (size_t isock = 0; isock < sock_count; ++isock)
-		mdns_discovery_send(sock_mdns[isock]);
+	for (size_t isock = 0; isock < sock_count; ++isock) {
+		if (sock_mdns[isock])
+			mdns_discovery_send(sock_mdns[isock]);
+	}
 
 	size_t iloop = 0;
 	while (iloop++ < 50) {
-		for (size_t isock = 0; isock < sock_count; ++isock)
-			mdns_discovery_recv(sock_mdns[isock], databuf, sizeof(databuf), query_callback, nullptr);
+		for (size_t isock = 0; isock < sock_count; ++isock) {
+			if (sock_mdns[isock])
+				mdns_discovery_recv(sock_mdns[isock], databuf, sizeof(databuf), query_callback, nullptr);
+		}
 		thread_sleep(100);
 	}
 
@@ -167,70 +178,97 @@ DECLARE_TEST(dnssd, discover) {
 }
 
 DECLARE_TEST(dnssd, query) {
-	socket_t* sock_mdns;
+	socket_t* sock_mdns[16];
 	uint32_t databuf[128];
 
-	log_set_suppress(HASH_NETWORK, ERRORLEVEL_NONE);
-	log_set_suppress(HASH_TEST, ERRORLEVEL_NONE);
+	//log_set_suppress(HASH_NETWORK, ERRORLEVEL_NONE);
+	//log_set_suppress(HASH_TEST, ERRORLEVEL_NONE);
 	log_set_suppress(HASH_MDNS, ERRORLEVEL_NONE);
 
-	sock_mdns = udp_socket_allocate();
-	EXPECT_NE(sock_mdns, nullptr);
+	network_address_t** local_address = network_address_local();
+	EXPECT_NE(local_address, 0);
 
-	EXPECT_TRUE(mdns_socket_bind(sock_mdns, nullptr));
+	size_t sock_count = array_size(local_address);
+	size_t sock_capacity = sizeof(sock_mdns) / sizeof(sock_mdns[0]);
+	if (sock_count > sock_capacity)
+		sock_count = sock_capacity;
 
-	mdns_query_send(sock_mdns, MDNS_RECORDTYPE_PTR, STRING_CONST("_ssh._tcp.local."), databuf, sizeof(databuf), 0);
+	size_t sock_bound_count = 0;
+	for (size_t isock = 0; isock < sock_count; ++isock) {
+		sock_mdns[isock] = udp_socket_allocate();
+		EXPECT_NE(sock_mdns, nullptr);
 
-	size_t iloop = 0;
-	while (iloop++ < 30) {
-		mdns_query_recv(sock_mdns, databuf, sizeof(databuf), query_callback, nullptr, 0);
-		thread_sleep(100);
+		if (mdns_socket_bind(sock_mdns[isock], local_address[isock])) {
+			++sock_bound_count;
+		} else {
+			socket_deallocate(sock_mdns[isock]);
+			sock_mdns[isock] = nullptr;
+		}
+	}
+	EXPECT_GT(sock_bound_count, 0);
+
+	for (size_t isock = 0; isock < sock_count; ++isock) {
+		if (!sock_mdns[isock])
+			continue;
+
+		mdns_query_send(sock_mdns[isock], MDNS_RECORDTYPE_PTR, STRING_CONST("_ssh._tcp.local."), databuf, sizeof(databuf), 0);
+
+		size_t iloop = 0;
+		while (iloop++ < 30) {
+			mdns_query_recv(sock_mdns[isock], databuf, sizeof(databuf), query_callback, nullptr, 0);
+			thread_sleep(100);
+		}
+
+		mdns_query_send(sock_mdns[isock], MDNS_RECORDTYPE_PTR, STRING_CONST("_smb_tcp.local."), databuf,
+		                sizeof(databuf), 0);
+
+		iloop = 0;
+		while (iloop++ < 30) {
+			mdns_query_recv(sock_mdns[isock], databuf, sizeof(databuf), query_callback, nullptr, 0);
+			thread_sleep(100);
+		}
+
+		mdns_query_send(sock_mdns[isock], MDNS_RECORDTYPE_PTR, STRING_CONST("_googlecast._tcp.local."), databuf, sizeof(databuf),
+		                0);
+
+		iloop = 0;
+		while (iloop++ < 30) {
+			mdns_query_recv(sock_mdns[isock], databuf, sizeof(databuf), query_callback, nullptr, 0);
+			thread_sleep(100);
+		}
+
+		mdns_query_send(sock_mdns[isock], MDNS_RECORDTYPE_SRV, STRING_CONST("macdev._smb._tcp.local."), databuf, sizeof(databuf),
+		                0);
+
+		iloop = 0;
+		while (iloop++ < 30) {
+			mdns_query_recv(sock_mdns[isock], databuf, sizeof(databuf), query_callback, nullptr, 0);
+			thread_sleep(100);
+		}
+
+		mdns_query_send(sock_mdns[isock], MDNS_RECORDTYPE_A, STRING_CONST("macdev.local."), databuf, sizeof(databuf), 0);
+
+		iloop = 0;
+		while (iloop++ < 30) {
+			mdns_query_recv(sock_mdns[isock], databuf, sizeof(databuf), query_callback, nullptr, 0);
+			thread_sleep(100);
+		}
+
+		mdns_query_send(sock_mdns[isock], MDNS_RECORDTYPE_AAAA, STRING_CONST("macdev.local."), databuf, sizeof(databuf), 0);
+
+		iloop = 0;
+		while (iloop++ < 30) {
+			mdns_query_recv(sock_mdns[isock], databuf, sizeof(databuf), query_callback, nullptr, 0);
+			thread_sleep(100);
+		}
 	}
 
-	mdns_query_send(sock_mdns, MDNS_RECORDTYPE_PTR, STRING_CONST("_spotify-connect._tcp.local."), databuf,
-	                sizeof(databuf), 0);
+	for (size_t isock = 0; isock < sock_count; ++isock)
+		socket_deallocate(sock_mdns[isock]);
 
-	iloop = 0;
-	while (iloop++ < 30) {
-		mdns_query_recv(sock_mdns, databuf, sizeof(databuf), query_callback, nullptr, 0);
-		thread_sleep(100);
-	}
-
-	mdns_query_send(sock_mdns, MDNS_RECORDTYPE_PTR, STRING_CONST("_googlecast._tcp.local."), databuf, sizeof(databuf),
-	                0);
-
-	iloop = 0;
-	while (iloop++ < 30) {
-		mdns_query_recv(sock_mdns, databuf, sizeof(databuf), query_callback, nullptr, 0);
-		thread_sleep(100);
-	}
-
-	mdns_query_send(sock_mdns, MDNS_RECORDTYPE_SRV, STRING_CONST("Tinybook._ssh._tcp.local."), databuf, sizeof(databuf),
-	                0);
-
-	iloop = 0;
-	while (iloop++ < 30) {
-		mdns_query_recv(sock_mdns, databuf, sizeof(databuf), query_callback, nullptr, 0);
-		thread_sleep(100);
-	}
-
-	mdns_query_send(sock_mdns, MDNS_RECORDTYPE_A, STRING_CONST("Tinybook.local."), databuf, sizeof(databuf), 0);
-
-	iloop = 0;
-	while (iloop++ < 30) {
-		mdns_query_recv(sock_mdns, databuf, sizeof(databuf), query_callback, nullptr, 0);
-		thread_sleep(100);
-	}
-
-	mdns_query_send(sock_mdns, MDNS_RECORDTYPE_AAAA, STRING_CONST("Tinybook.local."), databuf, sizeof(databuf), 0);
-
-	iloop = 0;
-	while (iloop++ < 30) {
-		mdns_query_recv(sock_mdns, databuf, sizeof(databuf), query_callback, nullptr, 0);
-		thread_sleep(100);
-	}
-
-	socket_deallocate(sock_mdns);
+	for (size_t iaddr = 0, acount = array_size(local_address); iaddr < acount; ++iaddr)
+		network_address_deallocate(local_address[iaddr]);
+	array_deallocate(local_address);
 
 	return 0;
 }

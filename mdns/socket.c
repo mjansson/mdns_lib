@@ -47,7 +47,7 @@ mdns_socket_bind(socket_t* sock, const network_address_t* address) {
 		network_address_ipv4_initialize((network_address_ipv4_t*)&multicast_addr);
 		network_address_ipv4_set_ip(&multicast_addr, (((uint32_t)224U) << 24U) | (uint32_t)251U);
 		if (!socket_set_multicast_group(sock, &multicast_addr, address, true)) {
-			log_error(HASH_MDNS, ERROR_SYSTEM_CALL_FAIL, STRING_CONST("Failed to set multicast group on mDNS socket"));
+			//log_error(HASH_MDNS, ERROR_SYSTEM_CALL_FAIL, STRING_CONST("Failed to set multicast group on mDNS socket"));
 			return false;
 		}
 		if (!address) {
@@ -62,7 +62,7 @@ mdns_socket_bind(socket_t* sock, const network_address_t* address) {
 		ip.s6_addr[15] = 0xFB;
 		network_address_ipv6_set_ip(&multicast_addr, ip);
 		if (!socket_set_multicast_group(sock, &multicast_addr, address, true)) {
-			log_error(HASH_MDNS, ERROR_SYSTEM_CALL_FAIL, STRING_CONST("Failed to set multicast group on mDNS socket"));
+			//log_error(HASH_MDNS, ERROR_SYSTEM_CALL_FAIL, STRING_CONST("Failed to set multicast group on mDNS socket"));
 			return false;
 		}
 		if (!address) {

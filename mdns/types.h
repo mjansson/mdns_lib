@@ -57,7 +57,7 @@ enum mdns_entry_type {
 	MDNS_ENTRYTYPE_END = 255
 };
 
-enum mdns_class { MDNS_CLASS_IN = 1 };
+enum mdns_class { MDNS_CLASS_IN = 1, MDNS_CLASS_ANY = 255 };
 
 typedef enum mdns_record_type mdns_record_type_t;
 typedef enum mdns_entry_type mdns_entry_type_t;
@@ -136,6 +136,8 @@ struct mdns_record_t {
 		mdns_record_aaaa_t aaaa;
 		mdns_record_txt_t txt;
 	} data;
+	uint16_t rclass;
+	uint32_t ttl;
 };
 
 struct mdns_header_t {
