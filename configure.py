@@ -19,8 +19,7 @@ toolchain = generator.toolchain
 mdns_lib = generator.lib( module = 'mdns', sources = [
   'discovery.c', 'mdns.c', 'query.c', 'record.c', 'service.c', 'socket.c', 'string.c', 'version.c' ] )
 
-#No test cases if we're a submodule
-if generator.is_subninja():
+if generator.skip_tests():
   sys.exit()
 
 includepaths = generator.test_includepaths()
@@ -54,12 +53,15 @@ if toolchain.is_monolithic() or target.is_ios() or target.is_android() or target
     test_extrasources = [os.path.join('all', 'android', 'java', 'com', 'maniccoder', 'foundation', 'test', item) for item in [
       'TestActivity.java'
     ]]
+  dependlibs = ['test'] + dependlibs
   if target.is_macos() or target.is_ios() or target.is_android() or target.is_tizen():
-    generator.app(module = '', sources = [os.path.join(module, 'main.c') for module in test_cases] + test_extrasources, binname = 'test-all', basepath = 'test', implicit_deps = [mdns_lib], libs = ['test'] + dependlibs, resources = test_resources, includepaths = includepaths)
+    generator.app(module = '', sources = [os.path.join(module, 'main.c') for module in test_cases] + test_extrasources, binname = 'test-mdns', basepath = 'test', implicit_deps = [mdns_lib], libs = dependlibs, dependlibs = dependlibs, resources = test_resources, includepaths = includepaths)
   else:
-    generator.bin(module = '', sources = [os.path.join(module, 'main.c') for module in test_cases] + test_extrasources, binname = 'test-all', basepath = 'test', implicit_deps = [mdns_lib], libs = ['test'] + dependlibs, resources = test_resources, includepaths = includepaths)
+    generator.bin(module = '', sources = [os.path.join(module, 'main.c') for module in test_cases] + test_extrasources, binname = 'test-mdns', basepath = 'test', implicit_deps = [mdns_lib], libs = dependlibs, dependlibs = dependlibs, resources = test_resources, includepaths = includepaths)
 else:
   #Build one binary per test case
-  generator.bin(module = 'all', sources = ['main.c'], binname = 'test-all', basepath = 'test', implicit_deps = [mdns_lib], libs = dependlibs + extralibs, includepaths = includepaths)
+  if not generator.is_subninja:
+    generator.bin(module = 'all', sources = ['main.c'], binname = 'test-all', basepath = 'test', implicit_deps = [mdns_lib], libs = dependlibs + extralibs, dependlibs = dependlibs, includepaths = includepaths)
+  dependlibs = ['test'] + dependlibs
   for test in test_cases:
-    generator.bin(module = test, sources = ['main.c'], binname = 'test-' + test, basepath = 'test', implicit_deps = [mdns_lib], libs = ['test'] + dependlibs + extralibs, includepaths = includepaths)
+    generator.bin(module = test, sources = ['main.c'], binname = 'test-' + test, basepath = 'test', implicit_deps = [mdns_lib], libs = dependlibs + extralibs, dependlibs = dependlibs, includepaths = includepaths)
