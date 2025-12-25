@@ -19,11 +19,6 @@ toolchain = generator.toolchain
 mdns_lib = generator.lib( module = 'mdns', sources = [
   'discovery.c', 'mdns.c', 'query.c', 'record.c', 'service.c', 'socket.c', 'string.c', 'version.c' ] )
 
-if generator.skip_tests():
-  sys.exit()
-
-includepaths = generator.test_includepaths()
-
 extralibs = []
 if target.is_windows():
   extralibs += ['iphlpapi', 'ws2_32']
@@ -31,7 +26,12 @@ if target.is_windows():
 if not target.is_ios() and not target.is_android():
   configs = [ config for config in toolchain.configs if config not in [ 'profile', 'deploy' ] ]
   if not configs == []:
-    generator.bin( 'mdns', [ 'main.c' ], 'mdns', basepath = 'tools', implicit_deps = [ mdns_lib ], libs = dependlibs + extralibs, configs = configs )
+    generator.bin( 'mdns', [ 'main.c' ], 'mdns', basepath = 'tools', implicit_deps = [ mdns_lib ], dependlibs = dependlibs, libs = extralibs, configs = configs )
+
+if generator.skip_tests():
+  sys.exit()
+
+includepaths = generator.test_includepaths()
 
 test_cases = [
   'dnssd'
